@@ -38,17 +38,11 @@ function LoginComponent() {
     setIsSubmitting(true)
     try {
       evt.preventDefault()
-      const data = new FormData(evt.currentTarget)
-      const fieldValue = data.get("username")
-
-      if (!fieldValue) return
-      const username = fieldValue.toString()
-      await auth.login(username)
+    
+      await auth.login()
 
       await router.invalidate()
 
-      // This is just a hack being used to wait for the auth state to update
-      // in a real app, you'd want to use a more robust solution
       await sleep(1)
 
       await navigate({ to: search.redirect || fallback })
@@ -71,19 +65,6 @@ function LoginComponent() {
       )}
       <form className="mt-4 max-w-lg" onSubmit={onFormSubmit}>
         <fieldset disabled={isLoggingIn} className="w-full grid gap-2">
-          <div className="grid gap-2 items-center min-w-[300px]">
-            <label htmlFor="username-input" className="text-sm font-medium">
-              Username
-            </label>
-            <input
-              id="username-input"
-              name="username"
-              placeholder="Enter your name"
-              type="text"
-              className="border rounded-md p-2 w-full"
-              required
-            />
-          </div>
           <button
             type="submit"
             className="bg-blue-500 text-white py-2 px-4 rounded-md w-full disabled:bg-gray-300 disabled:text-gray-500"
