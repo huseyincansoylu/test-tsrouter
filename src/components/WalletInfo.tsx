@@ -21,7 +21,7 @@ export function WalletInfo() {
     
     try {
       // Use the existing login function from auth context
-      await login()
+      await login('google')
       
       // After successful login, connect with Wagmi
       // Find the Web3Auth connector from the available connectors
