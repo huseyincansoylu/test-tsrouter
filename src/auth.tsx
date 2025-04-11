@@ -3,6 +3,8 @@ import { IProvider, WALLET_ADAPTERS, UX_MODE, WEB3AUTH_NETWORK, getEvmChainConfi
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider"
 import { Web3AuthNoModal } from "@web3auth/no-modal"
 import { AuthAdapter } from "@web3auth/auth-adapter"
+import { WagmiProvider, createConfig } from "wagmi"
+import { getWagmiConfig } from "./wagmi"
 
 export interface AuthContext {
   isAuthenticated: boolean
@@ -11,6 +13,7 @@ export interface AuthContext {
   user: string | null
   provider: IProvider | null
   web3auth: Web3AuthNoModal | null
+  wagmiConfig: ReturnType<typeof createConfig> | null
 }
 
 const AuthContext = React.createContext<AuthContext | null>(null)
@@ -37,6 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState<string | null>(getStoredUser())
   const [provider, setProvider] = React.useState<IProvider | null>(null)
   const [web3authInstance, setWeb3authInstance] = React.useState<Web3AuthNoModal | null>(null)
+  const [wagmiConfig, setWagmiConfig] = React.useState<ReturnType<typeof createConfig> | null>(null)
   const isAuthenticated = !!user
   const iconUrl = 'https://avatars.githubusercontent.com/u/72553858?s=200&v=4'
 
@@ -88,6 +92,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await web3AuthInstance.init()
         setWeb3authInstance(web3AuthInstance)
         setProvider(web3AuthInstance.provider)
+        
+        // Initialize Wagmi config
+        const config = getWagmiConfig(web3AuthInstance)
+        setWagmiConfig(config)
+        
         if (web3AuthInstance.connected) {
           const userInfo = await web3AuthInstance.getUserInfo()
           setUser(userInfo.email || userInfo.name || "User")
@@ -150,8 +159,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [web3authInstance])
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, provider, web3auth: web3authInstance }}>
-      {children}
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, provider, web3auth: web3authInstance, wagmiConfig }}>
+      {wagmiConfig ? (
+        <WagmiProvider config={wagmiConfig}>
+          {children}
+        </WagmiProvider>
+      ) : (
+        <div>Loading...</div>
+      )}
     </AuthContext.Provider>
   )
 }

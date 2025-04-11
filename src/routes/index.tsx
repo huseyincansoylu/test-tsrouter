@@ -6,20 +6,19 @@ export const Route = createFileRoute("/")({
 
 function HomeComponent() {
   return (
-    <div className="p-2 grid gap-2">
-      <p>You can try going through these options.</p>
-      <ol className="list-disc list-inside px-2">
-        <li>
-          <Link to="/login" className="text-blue-500 hover:opacity-75">
-            Go to the public login page.
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-6">Welcome to the Web3Auth with Wagmi Example</h1>
+      <div className="space-y-4">
+        <p>This is a simple example of using Web3Auth with Wagmi in a React application.</p>
+        <div className="flex gap-4">
+          <Link to="/wallet" className="bg-blue-500 text-white py-2 px-4 rounded-md">
+            Go to Wallet Page
           </Link>
-        </li>
-        <li>
-          <Link to="/dashboard" className="text-blue-500 hover:opacity-75">
-            Go to the auth-only dashboard page.
+          <Link to="/login" className="bg-green-500 text-white py-2 px-4 rounded-md">
+            Login
           </Link>
-        </li>
-      </ol>
+        </div>
+      </div>
     </div>
   )
 }

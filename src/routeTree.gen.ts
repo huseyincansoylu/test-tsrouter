@@ -11,12 +11,19 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as WalletImport } from './routes/wallet'
 import { Route as LoginImport } from './routes/login'
 import { Route as DashboardImport } from './routes/dashboard'
 import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
 
 // Create/Update Routes
+
+const WalletRoute = WalletImport.update({
+  id: '/wallet',
+  path: '/wallet',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const LoginRoute = LoginImport.update({
   id: '/login',
@@ -74,6 +81,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginImport
       parentRoute: typeof rootRoute
     }
+    '/wallet': {
+      id: '/wallet'
+      path: '/wallet'
+      fullPath: '/wallet'
+      preLoaderRoute: typeof WalletImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -84,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/wallet': typeof WalletRoute
 }
 
 export interface FileRoutesByTo {
@@ -91,6 +106,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/wallet': typeof WalletRoute
 }
 
 export interface FileRoutesById {
@@ -99,14 +115,15 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/wallet': typeof WalletRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/dashboard' | '/login'
+  fullPaths: '/' | '/about' | '/dashboard' | '/login' | '/wallet'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/dashboard' | '/login'
-  id: '__root__' | '/' | '/about' | '/dashboard' | '/login'
+  to: '/' | '/about' | '/dashboard' | '/login' | '/wallet'
+  id: '__root__' | '/' | '/about' | '/dashboard' | '/login' | '/wallet'
   fileRoutesById: FileRoutesById
 }
 
@@ -115,6 +132,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
+  WalletRoute: typeof WalletRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -122,6 +140,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
+  WalletRoute: WalletRoute,
 }
 
 export const routeTree = rootRoute
@@ -137,7 +156,8 @@ export const routeTree = rootRoute
         "/",
         "/about",
         "/dashboard",
-        "/login"
+        "/login",
+        "/wallet"
       ]
     },
     "/": {
@@ -151,6 +171,9 @@ export const routeTree = rootRoute
     },
     "/login": {
       "filePath": "login.tsx"
+    },
+    "/wallet": {
+      "filePath": "wallet.tsx"
     }
   }
 }
