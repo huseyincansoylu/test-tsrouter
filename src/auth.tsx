@@ -1,5 +1,11 @@
 import * as React from "react"
-import { IProvider, WALLET_ADAPTERS, UX_MODE, WEB3AUTH_NETWORK, getEvmChainConfig } from "@web3auth/base"
+import {
+  IProvider,
+  WALLET_ADAPTERS,
+  UX_MODE,
+  WEB3AUTH_NETWORK,
+  getEvmChainConfig,
+} from "@web3auth/base"
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider"
 import { Web3AuthNoModal } from "@web3auth/no-modal"
 import { AuthAdapter } from "@web3auth/auth-adapter"
@@ -8,7 +14,9 @@ import { getWagmiConfig } from "./wagmi"
 
 export interface AuthContext {
   isAuthenticated: boolean
-  login: () => Promise<void>
+  login: (
+    provider: "google" | "github" | "facebook" | "reddit"
+  ) => Promise<void>
   logout: () => Promise<void>
   user: string | null
   provider: IProvider | null
@@ -39,10 +47,11 @@ const chainConfig = getEvmChainConfig(0xaa36a7, clientId)!
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState<string | null>(getStoredUser())
   const [provider, setProvider] = React.useState<IProvider | null>(null)
-  const [web3authInstance, setWeb3authInstance] = React.useState<Web3AuthNoModal | null>(null)
+  const [web3authInstance, setWeb3authInstance] =
+    React.useState<Web3AuthNoModal | null>(null)
   const [wagmiConfig, setWagmiConfig] = React.useState<ReturnType<typeof createConfig> | null>(null)
   const isAuthenticated = !!user
-  const iconUrl = 'https://avatars.githubusercontent.com/u/72553858?s=200&v=4'
+  const iconUrl = "https://avatars.githubusercontent.com/u/72553858?s=200&v=4"
 
   // Initialize Web3Auth
   React.useEffect(() => {
@@ -69,21 +78,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             network: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
             uxMode: UX_MODE.REDIRECT,
             replaceUrlOnRedirect: false,
-            storageKey: 'local',
+            storageKey: "local",
             redirectUrl: window.location.href,
             loginConfig: {
               google: {
-                verifier: 'nvm-subverifier-testnet',
-                typeOfLogin: 'google',
-                clientId: '112425687177-oaedru3vc9m7c45hsg3ka1n08svcn0eq.apps.googleusercontent.com',
-                verifierSubIdentifier: 'nvm-testnet-google-subverifier',
+                verifier: "nvm-subverifier-testnet",
+                typeOfLogin: "google",
+                clientId:
+                  "112425687177-oaedru3vc9m7c45hsg3ka1n08svcn0eq.apps.googleusercontent.com",
+                verifierSubIdentifier: "nvm-testnet-google-subverifier",
               },
             },
             whiteLabel: {
-              appName: 'Nevermined app',
+              appName: "Nevermined app",
               logoLight: iconUrl,
               logoDark: iconUrl,
-              defaultLanguage: 'en',
+              defaultLanguage: "en",
             },
           },
         })
@@ -92,11 +102,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await web3AuthInstance.init()
         setWeb3authInstance(web3AuthInstance)
         setProvider(web3AuthInstance.provider)
-        
+
         // Initialize Wagmi config
         const config = getWagmiConfig(web3AuthInstance)
         setWagmiConfig(config)
-        
+
         if (web3AuthInstance.connected) {
           const userInfo = await web3AuthInstance.getUserInfo()
           setUser(userInfo.email || userInfo.name || "User")
@@ -123,40 +133,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [web3authInstance])
 
-  const login = React.useCallback(async () => {
-    try {
-      console.log('login: starting')
-      if (!web3authInstance) {
-        throw new Error("Web3Auth not initialized")
-      }
-      console.log('login: web3authInstance exists')
+  const login = React.useCallback(
+    async (provider: "google" | "github" | "facebook" | "reddit") => {
+      try {
+        console.log(`login: starting with ${provider}`)
 
-      let web3authProvider = null
-      console.log('login: about to connect to google')
-      web3authProvider = await web3authInstance.connectTo(WALLET_ADAPTERS.AUTH, {
-        loginProvider: "google",
-      })
-      console.log('login: connected to google')
-
-      if (web3authProvider) {
-        console.log('login: got provider')
-        setProvider(web3authProvider)
-        if (web3authInstance.connected) {
-          console.log('login: instance is connected')
-          const userInfo = await web3authInstance.getUserInfo()
-          console.log('login: got user info', userInfo)
-          setUser(userInfo.email || userInfo.name || "User")
-          setStoredUser(userInfo.email || userInfo.name || "User")
-        } else {
-          console.log('login: instance is NOT connected')
+        if (!web3authInstance) {
+          throw new Error("Web3Auth not initialized")
         }
-      } else {
-        console.log('login: no provider received')
+
+        const web3authProvider = await web3authInstance.connectTo(
+          WALLET_ADAPTERS.AUTH,
+          {
+            loginProvider: provider,
+          }
+        )
+
+        if (web3authProvider) {
+          setProvider(web3authProvider)
+
+          if (web3authInstance.connected) {
+            const userInfo = await web3authInstance.getUserInfo()
+            setUser(userInfo.email || userInfo.name || "User")
+            setStoredUser(userInfo.email || userInfo.name || "User")
+          }
+        }
+      } catch (error) {
+        console.error(`Error logging in with ${provider}:`, error)
       }
-    } catch (error) {
-      console.error("Error logging in:", error)
-    }
-  }, [web3authInstance])
+    },
+    [web3authInstance]
+  )
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, user, login, logout, provider, web3auth: web3authInstance, wagmiConfig }}>
