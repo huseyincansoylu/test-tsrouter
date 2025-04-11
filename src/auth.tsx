@@ -1,4 +1,6 @@
-import * as React from "react"
+import {
+  createContext, ReactNode, useCallback, useContext, useEffect, useState
+} from "react"
 import {
   IProvider,
   WALLET_ADAPTERS,
@@ -24,7 +26,7 @@ export interface AuthContext {
   wagmiConfig: ReturnType<typeof createConfig> | null
 }
 
-const AuthContext = React.createContext<AuthContext | null>(null)
+const AuthContext = createContext<AuthContext | null>(null)
 
 const key = "tanstack.auth.user"
 
@@ -44,17 +46,17 @@ function setStoredUser(user: string | null) {
 const clientId = import.meta.env.VITE_WEB3AUTH_CLIENT_ID
 const chainConfig = getEvmChainConfig(0xaa36a7, clientId)!
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = React.useState<string | null>(getStoredUser())
-  const [provider, setProvider] = React.useState<IProvider | null>(null)
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<string | null>(getStoredUser())
+  const [provider, setProvider] = useState<IProvider | null>(null)
   const [web3authInstance, setWeb3authInstance] =
-    React.useState<Web3AuthNoModal | null>(null)
-  const [wagmiConfig, setWagmiConfig] = React.useState<ReturnType<typeof createConfig> | null>(null)
+    useState<Web3AuthNoModal | null>(null)
+  const [wagmiConfig, setWagmiConfig] = useState<ReturnType<typeof createConfig> | null>(null)
   const isAuthenticated = !!user
   const iconUrl = "https://avatars.githubusercontent.com/u/72553858?s=200&v=4"
 
   // Initialize Web3Auth
-  React.useEffect(() => {
+  useEffect(() => {
     const init = async () => {
       try {
         const privateKeyProvider = new EthereumPrivateKeyProvider({
@@ -120,7 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     init()
   }, [])
 
-  const logout = React.useCallback(async () => {
+  const logout = useCallback(async () => {
     try {
       if (web3authInstance) {
         await web3authInstance.logout()
@@ -133,7 +135,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [web3authInstance])
 
-  const login = React.useCallback(
+  const login = useCallback(
     async (provider: "google" | "github" | "facebook" | "reddit") => {
       try {
         console.log(`login: starting with ${provider}`)
@@ -179,7 +181,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useAuth() {
-  const context = React.useContext(AuthContext)
+  const context = useContext(AuthContext)
   if (!context) {
     throw new Error("useAuth must be used within an AuthProvider")
   }
