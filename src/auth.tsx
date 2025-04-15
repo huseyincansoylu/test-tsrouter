@@ -14,7 +14,7 @@ import { getWagmiConfig } from './wagmi';
 
 export interface AuthContext {
   isAuthenticated: boolean;
-  login: (provider: 'google' | 'github' | 'facebook' | 'reddit') => Promise<void>;
+  login: (provider: 'google' | 'github' | 'email_passwordless', email?: string) => Promise<void>;
   logout: () => Promise<void>;
   user: string | null;
   provider: IProvider | null;
@@ -131,7 +131,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [web3authInstance]);
 
   const login = useCallback(
-    async (provider: 'google' | 'github' | 'facebook' | 'reddit') => {
+    async (
+      provider: 'google' | 'github' | 'email_passwordless',
+
+      email?: string
+    ) => {
       try {
         console.log(`login: starting with ${provider}`);
 
@@ -139,8 +143,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           throw new Error('Web3Auth not initialized');
         }
 
+        let extraOptions = {};
+
+        if (provider === 'email_passwordless') {
+          extraOptions = {
+            login_hint: email,
+            name: 'Email',
+          };
+        }
+
         const web3authProvider = await web3authInstance.connectTo(WALLET_ADAPTERS.AUTH, {
           loginProvider: provider,
+          extraLoginOptions: extraOptions,
         });
 
         if (web3authProvider) {
